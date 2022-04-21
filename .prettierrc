@@ -1,0 +1,8 @@
+{
+  "printWidth": 120,
+  "semi": false,
+  "trailingComma": "none",
+  "singleQuote": true,
+  "prettier.spaceBeforeFunctionParen": true,
+  "htmlWhitespaceSensitivity": "ignore"
+}
