@@ -15,6 +15,25 @@ import {
   APP_LANGUAGE
 } from '@/store/mutation-types'
 import { loadLanguageAsync } from '@/locales'
+import {
+  routeEqual,
+  getNextRoute,
+  getRouteTitleHandled,
+  routeHasExist,
+  setTagNavListInLocalstorage,
+  getBreadCrumbList,
+  getTagNavListFromLocalstorage
+} from '@/utils/util'
+import router from '@/router'
+import store from '@/store'
+
+const closePage = (state, route) => {
+  const nextRoute = getNextRoute(state.tagNavList, route)
+  state.tagNavList = state.tagNavList.filter((item) => {
+    return !routeEqual(item, route)
+  })
+  router.push(nextRoute)
+}
 
 const app = {
   state: {
@@ -30,7 +49,15 @@ const app = {
     weak: false,
     multiTab: true,
     lang: 'en-US',
-    _antLocale: {}
+    _antLocale: {},
+
+    // tags
+    ruleRouterName: 'index',
+    breadCrumbList: [],
+    tagNavList: []
+  },
+  getters: {
+    ruleRouterName: state => state.ruleRouterName
   },
   mutations: {
     [SIDEBAR_TYPE]: (state, type) => {
@@ -80,17 +107,48 @@ const app = {
     [TOGGLE_MULTI_TAB]: (state, bool) => {
       storage.set(TOGGLE_MULTI_TAB, bool)
       state.multiTab = bool
+    },
+
+    setBreadCrumb(state, route) {
+      state.breadCrumbList = getBreadCrumbList(route, [])
+    },
+    closeTag(state, route) {
+      const tag = state.tagNavList.filter((item) => routeEqual(item, route))
+      route = tag[0] ? tag[0] : null
+      if (!route) return
+      closePage(state, route)
+    },
+    addTag(state, { route, type = 'unshift' }) {
+      const router = getRouteTitleHandled(route)
+      if (!routeHasExist(state.tagNavList, router)) {
+        if (type === 'push') state.tagNavList.push(router)
+        else {
+          if (router.name === store.getters['ruleRouterName']) state.tagNavList.unshift(router)
+          else state.tagNavList.splice(1, 0, router)
+        }
+        setTagNavListInLocalstorage([...state.tagNavList])
+      }
+    },
+    setTagNavList(state, list) {
+      let tagList = []
+      if (list) {
+        tagList = [...list]
+      } else tagList = getTagNavListFromLocalstorage() || []
+      state.tagNavList = tagList
+      setTagNavListInLocalstorage([...tagList])
     }
   },
   actions: {
-    setLang ({ commit }, lang) {
+    setLang({ commit }, lang) {
       return new Promise((resolve, reject) => {
         commit(APP_LANGUAGE, lang)
-        loadLanguageAsync(lang).then(() => {
-          resolve()
-        }).catch((e) => {
-          reject(e)
-        })
+        loadLanguageAsync(lang)
+          .then(() => {
+            resolve()
+          })
+          .catch((e) => {
+            reject(e)
+          })
       })
     }
   }

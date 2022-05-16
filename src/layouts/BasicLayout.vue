@@ -24,39 +24,52 @@
           增加 Header 左侧内容区自定义
     -->
     <template v-slot:headerContentRender>
-      <div>
-        <a-tooltip title="刷新页面">
-          <a-icon type="reload" style="font-size: 18px;cursor: pointer;" @click="() => { $message.info('只是一个DEMO') }" />
+      <div class="header-content-box">
+        <a-tooltip title="刷新页面" style="padding-top: 2px; margin-right: 40px">
+          <a-icon type="reload" style="font-size: 18px; cursor: pointer" @click="windowReload" />
         </a-tooltip>
+        <a-breadcrumb :routes="breadCrumbList">
+          <template slot="itemRender" slot-scope="{ route }">
+            <router-link :to="{name: route.name}">
+              {{ route.title || route.meta.title }}
+            </router-link>
+          </template>
+        </a-breadcrumb>
       </div>
     </template>
 
     <setting-drawer v-if="isDev" :settings="settings" @change="handleSettingChange">
-      <div style="margin: 12px 0;">
-        This is SettingDrawer custom footer content.
-      </div>
+      <div style="margin: 12px 0">This is SettingDrawer custom footer content.</div>
     </setting-drawer>
     <template v-slot:rightContentRender>
       <right-content :top-menu="settings.layout === 'topmenu'" :is-mobile="isMobile" :theme="settings.theme" />
     </template>
     <!-- custom footer / 自定义Footer -->
     <template v-slot:footerRender>
-      <global-footer />
+      <!-- <global-footer /> -->
     </template>
+    <div class="layout-tags-nav-box">
+      <tags-nav :value="$route" @input="handleClick" :list="tagNavList" @on-close="handleCloseTag" />
+    </div>
     <router-view />
   </pro-layout>
 </template>
 
 <script>
+// 因为 SettingDrawer 过于灵活而且配合 umi-plugin-antd-theme 有严重的性能问题。
+// 因此我们不建议在正式环境中使用 SettingDrawer，你需要人肉引入一下 SettingDrawer。预览网站中是通过 fetch:blocks 来添加的。
+// https://v4-pro.ant.design/docs/layout-cn#settingdrawer
 import { SettingDrawer, updateTheme } from '@ant-design-vue/pro-layout'
 import { i18nRender } from '@/locales'
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 import { CONTENT_WIDTH_TYPE, SIDEBAR_TYPE, TOGGLE_MOBILE_TYPE } from '@/store/mutation-types'
 
 import defaultSettings from '@/config/defaultSettings'
+import TagsNav from './tagsNav.vue'
 import RightContent from '@/components/GlobalHeader/RightContent'
 import GlobalFooter from '@/components/GlobalFooter'
 import LogoSvg from '../assets/logo.svg?inline'
+import { routeEqual, getNewTagList } from '@/utils/util'
 
 export default {
   name: 'BasicLayout',
@@ -64,9 +77,10 @@ export default {
     SettingDrawer,
     RightContent,
     GlobalFooter,
-    LogoSvg
+    LogoSvg,
+    TagsNav
   },
-  data () {
+  data() {
     return {
       // end
       isDev: process.env.NODE_ENV === 'development' || process.env.VUE_APP_PREVIEW === 'true',
@@ -89,6 +103,8 @@ export default {
         fixSiderbar: defaultSettings.fixSiderbar,
         colorWeak: defaultSettings.colorWeak,
 
+        openKeys: defaultSettings.openKeys,
+
         hideHintAlert: false,
         hideCopyButton: false
       },
@@ -100,13 +116,28 @@ export default {
     }
   },
   computed: {
+    tagNavList() {
+      return this.$store.state.app.tagNavList
+    },
     ...mapState({
       // 动态主路由
-      mainMenu: state => state.permission.addRouters
+      mainMenu: (state) => state.permission.addRouters,
+      breadCrumbList: (state) => state.app.breadCrumbList
     })
   },
-  created () {
-    const routes = this.mainMenu.find(item => item.path === '/')
+  watch: {
+    $route(newRoute) {
+      const { name, query, params, meta } = newRoute
+      this.addTag({
+        route: { name, query, params, meta },
+        type: 'push'
+      })
+      this.setBreadCrumb(newRoute)
+      this.setTagNavList(getNewTagList(this.tagNavList, newRoute))
+    }
+  },
+  created() {
+    const routes = this.mainMenu.find((item) => item.path === '/')
     this.menus = (routes && routes.children) || []
     // 处理侧栏收起状态
     this.$watch('collapsed', () => {
@@ -116,7 +147,7 @@ export default {
       this.$store.commit(TOGGLE_MOBILE_TYPE, this.isMobile)
     })
   },
-  mounted () {
+  mounted() {
     const userAgent = navigator.userAgent
     if (userAgent.indexOf('Edge') > -1) {
       this.$nextTick(() => {
@@ -132,10 +163,21 @@ export default {
     if (process.env.NODE_ENV !== 'production' || process.env.VUE_APP_PREVIEW === 'true') {
       updateTheme(this.settings.primaryColor)
     }
+
+    /**
+     * @description 初始化设置面包屑导航和标签导航
+     */
+    this.setTagNavList()
+    const { name, params, query, meta } = this.$route
+    this.addTag({
+      route: { name, params, query, meta }
+    })
+    this.setBreadCrumb(this.$route)
   },
   methods: {
+    ...mapMutations(['setBreadCrumb', 'setTagNavList', 'addTag']),
     i18nRender,
-    handleMediaQuery (val) {
+    handleMediaQuery(val) {
       this.query = val
       if (this.isMobile && !val['screen-xs']) {
         this.isMobile = false
@@ -148,11 +190,10 @@ export default {
         // this.settings.fixSiderbar = false
       }
     },
-    handleCollapse (val) {
+    handleCollapse(val) {
       this.collapsed = val
     },
-    handleSettingChange ({ type, value }) {
-      console.log('type', type, value)
+    handleSettingChange({ type, value }) {
       type && (this.settings[type] = value)
       switch (type) {
         case 'contentWidth':
@@ -167,11 +208,48 @@ export default {
           }
           break
       }
+    },
+
+    handleCloseTag(res, type, route) {
+      if (type !== 'others') {
+        if (type === 'all') {
+          this.turnToPage(this.$store.getters['ruleRouterName'])
+        } else {
+          if (routeEqual(this.$route, route)) {
+            this.closeTag(route)
+          }
+        }
+      }
+      this.setTagNavList(res)
+    },
+    turnToPage(route) {
+      let { name, params, query } = {}
+      if (typeof route === 'string') name = route
+      else {
+        name = route.name
+        params = route.params
+        query = route.query
+      }
+      if (name.indexOf('isTurnByHref_') > -1) {
+        window.open(name.split('_')[1])
+        return
+      }
+      this.$router.push({
+        name,
+        params,
+        query
+      })
+    },
+    handleClick(item) {
+      this.turnToPage(item)
+    },
+    windowReload() {
+      this.$store.dispatch('setTimestamp', Date.parse(new Date()))
     }
   }
 }
 </script>
 
 <style lang="less">
-@import "./BasicLayout.less";
+@import './BasicLayout.less';
 </style>
