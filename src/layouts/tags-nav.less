@@ -1,7 +1,17 @@
-
+@boxMargin: 24px;
+.layout-tags-nav-fixed{
+  margin: 0 !important;
+  position: fixed;
+  right:0;
+  left:0;
+  top:64px;
+}
 .layout-tags-nav-box{
-  margin: -24px -24px 10px;
+  margin: -@boxMargin -@boxMargin 10px;
   height: 38px;
+  z-index: 8;
+  background-color: #f0f2f5;
+  box-shadow:0px 3px 4px rgba(0, 0, 0, 0.1);
   .no-select{
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -28,7 +38,6 @@
       width: 32px;
       background: #fff;
       text-align: center;
-      z-index: 10;
       .ant-btn{
         margin-top: 8px;
         border-color: transparent !important;
@@ -40,7 +49,6 @@
       height: 100%;
       background: #fff;
       padding-top: 3px;
-      z-index: 10;
       button{
         border-color: transparent !important;
         padding: 5px 4px;
@@ -61,7 +69,7 @@
       right: 61px;
       top: 0;
       bottom: 0;
-      box-shadow: 0px 0 3px 2px rgba(100,100,100,.1) inset;
+      // box-shadow: 0px 0 3px 2px rgba(100,100,100,.1) inset;
       .scroll-body{
         height: ~"calc(100% - 1px)";
         display: inline-block;

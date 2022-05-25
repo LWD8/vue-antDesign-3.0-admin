@@ -36,7 +36,7 @@
           :data-route-item="item"
           @close="handleClose(item)"
           @click.native="handleClick(item)"
-          :closable="item.name !== $store.getters['ruleRouterName']"
+          :closable="item.name !== $store.getters['ruleRouterName'] && !isCurrentTag(item)"
           :color="isCurrentTag(item) ? 'blue' : ''"
           @contextmenu.prevent.native="contextMenu(item, $event)"
         >

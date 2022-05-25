@@ -1,5 +1,6 @@
 <template>
   <div :class="wrpCls">
+    <FullScreen v-model="isFullscreen"/>
     <avatar-dropdown :menu="showMenu" :current-user="currentUser" :class="prefixCls" />
     <select-lang :class="prefixCls" />
   </div>
@@ -7,13 +8,15 @@
 
 <script>
 import AvatarDropdown from './AvatarDropdown'
+import FullScreen from './FullScreen'
 import SelectLang from '@/components/SelectLang'
 
 export default {
   name: 'RightContent',
   components: {
     AvatarDropdown,
-    SelectLang
+    SelectLang,
+    FullScreen
   },
   props: {
     prefixCls: {
@@ -35,6 +38,7 @@ export default {
   },
   data () {
     return {
+      isFullscreen: false,
       showMenu: true,
       currentUser: {}
     }

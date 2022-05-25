@@ -48,7 +48,7 @@
     <template v-slot:footerRender>
       <!-- <global-footer /> -->
     </template>
-    <div class="layout-tags-nav-box">
+    <div class="layout-tags-nav-box" :class="{ 'layout-tags-nav-fixed': settings.fixedHeader }" :style="{left: tagsLeft}">
       <tags-nav :value="$route" @input="handleClick" :list="tagNavList" @on-close="handleCloseTag" />
     </div>
     <router-view />
@@ -118,6 +118,10 @@ export default {
   computed: {
     tagNavList() {
       return this.$store.state.app.tagNavList
+    },
+    tagsLeft() {
+      if (this.settings.layout === 'sidemenu' && this.settings.fixedHeader) return `calc(256px)`
+      else return '0'
     },
     ...mapState({
       // 动态主路由
