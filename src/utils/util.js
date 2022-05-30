@@ -345,6 +345,7 @@ export const getBreadCrumbList = (route, homeRoute) => {
 
   // 获取递归路由数组
   const routeMetched = route.matched
+  if (!routeMetched) return []
   const res = routeMetched.map((item) => {
     const meta = { ...item.meta }
     const obj = {

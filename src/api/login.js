@@ -1,10 +1,11 @@
 import request from '@/utils/request'
 
 const userApi = {
-  Login: '/Account/login',
+  Login: '/auth/login',
   Logout: '/auth/logout',
   ForgePassword: '/auth/forge-password',
   Register: '/auth/register',
+  twoStepCode: '/auth/2step-code',
   SendSms: '/account/sms',
   SendSmsErr: '/account/sms_err',
   // get my info
@@ -15,8 +16,10 @@ const userApi = {
 /**
  * login func
  * parameter: {
- *     account: '',
- *     password: ''
+ *     username: '',
+ *     password: '',
+ *     remember_me: true,
+ *     captcha: '12345'
  * }
  * @param parameter
  * @returns {*}
@@ -25,7 +28,7 @@ export function login (parameter) {
   return request({
     url: userApi.Login,
     method: 'post',
-    params: parameter
+    data: parameter
   })
 }
 
@@ -61,5 +64,17 @@ export function logout () {
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
     }
+  })
+}
+
+/**
+ * get user 2step code open?
+ * @param parameter {*}
+ */
+export function get2step (parameter) {
+  return request({
+    url: userApi.twoStepCode,
+    method: 'post',
+    data: parameter
   })
 }

@@ -2,32 +2,6 @@
 // 如果到时做动态路由，则可以把下面数据，复制到Mock模拟数据
 // src/mock/services/user userNav.nav数据
 export default [
-  // proxy
-  {
-    name: 'proxy',
-    parentId: 0,
-    id: 500010,
-    meta: {
-      icon: 'table',
-      title: '代理管理',
-      show: true
-    },
-    redirect: '/proxy/ProxyGroup',
-    component: 'RouteView'
-  },
-  {
-    name: 'proxyGroup',
-    parentId: 500010,
-    id: 500012,
-    meta: {
-      icon: 'table',
-      title: '代理组',
-      show: true
-    },
-    component: 'ProxyGroup'
-  },
-
-  // -------------------下面为模板页面---------------------
   // list
   {
     name: 'list',

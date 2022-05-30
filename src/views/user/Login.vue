@@ -7,20 +7,20 @@
         @change="handleTabClick"
       >
         <a-tab-pane key="tab1" :tab="$t('user.login.tab-login-credentials')"> -->
-      <a-alert
+      <!-- <a-alert
         v-if="isLoginError"
         type="error"
         showIcon
         style="margin-bottom: 24px"
         :message="$t('user.login.message-invalid-credentials')"
-      />
+      /> -->
       <a-form-item>
         <a-input
           size="large"
           type="text"
           :placeholder="$t('user.login.username.placeholder')"
           v-decorator="[
-            'account',
+            'username',
             {
               rules: [{ required: true, message: $t('user.userName.required') }, { validator: handleUsernameOrEmail }],
               validateTrigger: 'change'
@@ -94,38 +94,79 @@
         <router-link class="register" :to="{ name: 'register' }">{{ $t('user.login.signup') }}</router-link>
       </div> -->
     </a-form>
+
+    <modal :modalConfig="verifyModalConfig" @cancel="cancelVerifyModal">
+      <div>
+        <slide-verify
+          ref="slideblock"
+          v-bind="slideVerifyConfig"
+          :imgs="imgs"
+          slider-text="向右滑动"
+          @success="onSuccess"
+          @fail="onFail"
+          @refresh="onRefresh"
+        ></slide-verify>
+      </div>
+    </modal>
   </div>
 </template>
 
 <script>
+import { Modal } from '@/components'
 // import md5 from 'md5'
 import { mapActions } from 'vuex'
 import { timeFix } from '@/utils/util'
 import { getSmsCaptcha } from '@/api/login'
 
+const SUCCESS_TEXT = 'success'
+
 export default {
+  components: {
+    Modal
+  },
   data() {
     return {
+      verifyModalConfig: {
+        width: 415,
+        title: '',
+        closable: false,
+        visible: false,
+        footer: null
+      },
+      slideVerifyConfig: {
+        l: 42,
+        r: 10,
+        w: 368,
+        h: 200
+      },
       customActiveKey: 'tab1',
       loginBtn: false,
-      // login type: 0 email, 1 account, 2 telephone
+      // login type: 0 email, 1 username, 2 telephone
       loginType: 0,
       isLoginError: false,
       form: this.$form.createForm(this),
       state: {
         time: 60,
         loginBtn: false,
-        // login type: 0 email, 1 account, 2 telephone
+        // login type: 0 email, 1 username, 2 telephone
         loginType: 0,
         smsSendBtn: false
-      }
+      },
+      imgs: [
+        require('@/assets/img/img0.jpg'),
+        require('@/assets/img/img1.jpg'),
+        require('@/assets/img/img2.jpg'),
+        require('@/assets/img/img3.jpg'),
+        require('@/assets/img/img4.jpg'),
+        require('@/assets/img/img5.jpg')
+      ]
     }
   },
   created() {
     if (process.env.NODE_ENV !== 'production') {
       this.$nextTick(() => {
         this.form.setFieldsValue({
-          account: 'admin',
+          username: 'admin',
           password: '123456'
         })
       })
@@ -149,7 +190,7 @@ export default {
       // this.form.resetFields()
     },
     handleSubmit(e) {
-      e.preventDefault()
+      e && e.preventDefault()
       const {
         form: { validateFields },
         state,
@@ -159,13 +200,18 @@ export default {
 
       state.loginBtn = true
 
-      const validateFieldsKey = customActiveKey === 'tab1' ? ['account', 'password'] : ['mobile', 'captcha']
+      const validateFieldsKey = customActiveKey === 'tab1' ? ['username', 'password'] : ['mobile', 'captcha']
 
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         if (!err) {
+          if (!this.verifyMsg) {
+            this.verifyModalConfig.visible = true
+            state.loginBtn = false
+            return
+          }
           const loginParams = { ...values }
-          delete loginParams.account
-          loginParams[!state.loginType ? 'email' : 'account'] = values.account
+          delete loginParams.username
+          loginParams[!state.loginType ? 'email' : 'username'] = values.username
           // loginParams.password = md5(values.password)
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
@@ -181,7 +227,7 @@ export default {
       })
     },
     getCaptcha(e) {
-      e.preventDefault()
+      e && e.preventDefault()
       const {
         form: { validateFields },
         state
@@ -249,6 +295,24 @@ export default {
         description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',
         duration: 4
       })
+    },
+    onSuccess() {
+      this.verifyMsg = SUCCESS_TEXT
+      this.verifyModalConfig.visible = false
+
+      this.state.loginBtn = true
+      setTimeout(() => {
+        this.handleSubmit()
+      }, 1500)
+    },
+    onFail() {
+      this.verifyMsg = ''
+    },
+    onRefresh() {
+      this.verifyMsg = ''
+    },
+    cancelVerifyModal() {
+      this.verifyModalConfig.visible = false
     }
   }
 }

@@ -14,9 +14,6 @@ const constantRouterComponents = {
   404: () => import(/* webpackChunkName: "error" */ '@/views/exception/404'),
   500: () => import(/* webpackChunkName: "error" */ '@/views/exception/500'),
 
-  // proxy
-  ProxyGroup: () => import('@/views/proxyGroup'),
-
   // account
   AccountSettings: () => import('@/views/account/settings/Index'),
   BasicSetting: () => import('@/views/account/settings/BasicSetting'),

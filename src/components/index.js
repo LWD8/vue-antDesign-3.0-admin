@@ -7,6 +7,7 @@ import MultiTab from '@/components/MultiTab'
 import ArticleListContent from '@/components/ArticleListContent'
 
 import Dialog from '@/components/Dialog'
+import Modal from '@/components/Modal'
 
 export {
   Ellipsis,
@@ -16,5 +17,6 @@ export {
   MultiTab,
   ArticleListContent,
 
-  Dialog
+  Dialog,
+  Modal
 }

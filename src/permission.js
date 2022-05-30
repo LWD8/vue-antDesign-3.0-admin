@@ -47,7 +47,6 @@ function setRouters({ to, from, next, result }) {
   rootRouter.redirect = childrenNav[0].redirect
   menuNav.push(rootRouter)
   const routers = generator(menuNav)
-  console.log(routers, 'routers')
   routers.push(notFoundRouter)
   store.commit('SET_ROUTERS', routers)
 

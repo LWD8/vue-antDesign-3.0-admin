@@ -37,17 +37,9 @@ const user = {
     Login ({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
-          const result = response.data
-          storage.set(ACCESS_TOKEN, result.accountToken)
-          storage.set(USER_INFO, result)
-          storage.set(USER_NAME, { name: result.accountName, welcome: '' })
-          storage.set(USER_AVATAR, result.avatar)
-
-          commit('SET_TOKEN', result.accountToken)
-          commit('SET_INFO', result)
-          // commit('SET_NAME', { name: result.name, welcome: welcome() })
-          commit('SET_NAME', { name: result.accountName, welcome: '' })
-          commit('SET_AVATAR', result.avatar)
+          const result = response.result
+          storage.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
+          commit('SET_TOKEN', result.token)
           resolve()
         }).catch(error => {
           reject(error)
@@ -91,15 +83,11 @@ const user = {
     Logout ({ commit, state }) {
       return new Promise((resolve) => {
         logout(state.token).then(() => {
+          commit('setBreadCrumb', {})
+          commit('setTagNavList', [])
           commit('SET_TOKEN', '')
           commit('SET_ROLES', [])
-          commit('SET_INFO', {})
-          commit('SET_NAME', '')
-          commit('SET_AVATAR', '')
           storage.remove(ACCESS_TOKEN)
-          storage.remove(USER_INFO)
-          storage.remove(USER_NAME)
-          storage.remove(USER_AVATAR)
           resolve()
         }).catch((err) => {
           console.log('logout fail:', err)

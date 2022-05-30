@@ -22,6 +22,7 @@ const messages = {
 
 const i18n = new VueI18n({
   silentFallbackWarn: true,
+  silentTranslationWarn: true, // 关闭waring提示信息.目前不使用i18n，如果需要使用时，可以去除警告。可以查看页面哪些文字没有进行翻译
   locale: defaultLang,
   fallbackLocale: defaultLang,
   messages
