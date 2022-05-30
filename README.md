@@ -6,8 +6,8 @@
 5：添加快速导航菜单Tags
 
 # 精简版截图
-![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/master/public/images/img1.png)
-![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/master/public/images/img2.png)
+![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/main/public/images/img1.png)
+![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/main/public/images/img2.png)
 
 - Install dependencies
 ```
