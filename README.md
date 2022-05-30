@@ -1,8 +1,13 @@
-根据官方版本，再次进行简化模板
-
-解决问题：
-1：动态路由默认重定向，改为默认选择菜单第一个
+# 优化问题
+1：动态路由配置方式
 2：svg图片不生效
+3：登录添加滑块
+4：添加面包屑Breadcrumb
+5：添加快速导航菜单Tags
+
+# 精简版截图
+![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/master/public/images/img1.png)
+![image](https://github.com/LWD8/vue-antDesign-3.0-admin/blob/master/public/images/img2.png)
 
 - Install dependencies
 ```
